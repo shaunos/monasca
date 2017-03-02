@@ -1,0 +1,154 @@
+# The region for which all metrics passing through this server will be persisted
+region: "RegionOne"
+
+maxQueryLimit: 10000
+
+# Whether this server is running on a secure port
+accessedViaHttps: false
+
+# Topic for publishing metrics to
+metricsTopic: metrics
+
+# Topic for publishing domain events to
+eventsTopic: events
+
+validNotificationPeriods:
+  - 60
+
+kafka:
+  brokerUris:
+    - "localhost:9092"
+  zookeeperUris:
+    - "localhost:2181"
+  healthCheckTopic: healthcheck
+
+mysql:
+  driverClass: com.mysql.jdbc.Driver
+  url: jdbc:mysql://192.168.1.11:3306/mon?connectTimeout=5000&autoReconnect=true&useSSL=false&useLegacyDatetimeCode=false
+  user: monasca
+  password: qydcos
+  maxWaitForConnection: 1s
+  validationQuery: "/* MyService Health Check */ SELECT 1"
+  minSize: 8
+  maxSize: 32
+  checkConnectionWhileIdle: false
+  checkConnectionOnBorrow: true
+
+hibernate:
+  supportEnabled: false
+  providerClass: com.zaxxer.hikari.hibernate.HikariConnectionProvider
+  dataSourceClassName: org.postgresql.ds.PGPoolingDataSource
+  serverName: localhost
+  portNumber: 3306
+  databaseName: mon
+  user: monasca
+  password: qydcos
+  initialConnections: 25
+  maxConnections: 100
+  autoConfig: validate
+
+databaseConfiguration:
+  databaseType: "influxdb"
+
+# Uncomment if databaseType is influxDB
+influxDB:
+  # Retention policy may be left blank to indicate default policy.
+  retentionPolicy:
+  maxHttpConnections: 100
+  gzip: true
+  name: "mon"
+  url: "http://localhost:8086"
+  user: "monasca"
+  password: "qydcos"
+
+#vertica_api_user : [monasca]
+
+
+# Uncomment if databaseType is vertica
+# As of 7/10 there is a bug in the monasca-api that requires this section even if databaseType is set to influxdb
+vertica:
+  driverClass: com.vertica.jdbc.Driver
+  url: "jdbc:vertica://localhost:5433/mon"
+  user: monasca
+  password: qydcos
+  maxWaitForConnection: 1s
+  validationQuery: "/* MyService Health Check */ SELECT 1"
+  minSize: 4
+  maxSize: 32
+  checkConnectionWhileIdle: true
+
+middleware:
+  enabled: true
+  serverVIP: "192.168.1.11"
+  serverPort: 5000
+  useHttps: false
+  truststore: ""
+  truststorePassword: ""
+  connTimeout: 500
+  connSSLClientAuth: false
+  keystore: ""
+  keystorePassword: ""
+  connPoolMaxActive: 3
+  connPoolMaxIdle: 3
+  connPoolEvictPeriod: 600000
+  connPoolMinIdleTime: 600000
+  connRetryTimes: 2
+  connRetryInterval: 50
+  defaultAuthorizedRoles: [admin]
+  agentAuthorizedRoles: [admin]
+  adminAuthMethod: password
+  adminUser: "monasca"
+  adminPassword: "qydcos"
+  adminProjectId: "03595970bee740f898de282431ddcada" 
+  adminProjectName: "service"
+  adminToken: "openstack1234"
+#  domainId: "e25e0413a70c41449d2ccc2578deb1e4"
+  timeToCacheToken: 600
+  maxTokenCacheSize: 1048576
+
+server:
+  applicationConnectors:
+    - type: http
+      port: 8070 
+      maxRequestHeaderSize: 16KiB  # Allow large headers used by keystone tokens
+  adminConnectors:
+    - type: http
+      port: 8081
+  requestLog:
+   timeZone: UTC
+   appenders:
+    - type: file
+      currentLogFilename: "/var/log/monasca/api/request.log"
+      threshold: ALL
+      archive: true
+      archivedLogFilenamePattern: "/var/log/monasca/api/request-%d.log.gz"
+      archivedFileCount: 5
+
+# Logging settings.
+logging:
+
+  # The default level of all loggers. Can be OFF, ERROR, WARN, INFO, DEBUG, TRACE, or ALL.
+  level: DEBUG 
+
+  # Logger-specific levels.
+  loggers:
+
+    # Sets the level for 'com.example.app' to DEBUG.
+    com.example.app: DEBUG
+
+  appenders:
+    - type: console
+      threshold: ALL
+      timeZone: UTC
+      target: stdout
+      logFormat: # TODO
+
+    - type: file
+      currentLogFilename: "/var/log/monasca/api/monasca-api.log"
+      threshold: ALL
+      archive: true
+      archivedLogFilenamePattern: "/var/log/monasca/api/monasca-api-%d.log.gz"
+      archivedFileCount: 5
+      timeZone: UTC
+      logFormat: # TODO
+
